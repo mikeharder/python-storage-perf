@@ -1,1 +1,2 @@
 azure-storage-blob==12.4.0
+azure-core==1.8.1
