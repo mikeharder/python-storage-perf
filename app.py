@@ -144,77 +144,78 @@ blob_client = BlobClient.from_blob_url(url)
 block_id = str(uuid.uuid4())
 
 array = os.urandom(size)
-while True:
-    try:
-        blob_client.delete_blob()
-    except:
-        pass
+with pipeline, pipelinex:
+    while True:
+        try:
+            blob_client.delete_blob()
+        except:
+            pass
 
-    start = time.perf_counter()
-    conn.request("PUT", url, body=LargeStream(size), headers=headers)
-    resp = conn.getresponse()
-    resp.read()
-    stop = time.perf_counter()
-    duration = stop - start
-    mbps = ((size / duration) * 8) / (1024 * 1024)
-    print(f'[http.client, stream] Put {size:,} bytes in {duration:.2f} seconds ({mbps:.2f} Mbps), Response={resp.status}')
+        start = time.perf_counter()
+        conn.request("PUT", url, body=LargeStream(size), headers=headers)
+        resp = conn.getresponse()
+        resp.read()
+        stop = time.perf_counter()
+        duration = stop - start
+        mbps = ((size / duration) * 8) / (1024 * 1024)
+        print(f'[http.client, stream] Put {size:,} bytes in {duration:.2f} seconds ({mbps:.2f} Mbps), Response={resp.status}')
 
-    start = time.perf_counter()
-    conn.request("PUT", url, body=array, headers=headers)
-    resp = conn.getresponse()
-    resp.read()
-    stop = time.perf_counter()
-    duration = stop - start
-    mbps = ((size / duration) * 8) / (1024 * 1024)
-    print(f'[http.client, array] Put {size:,} bytes in {duration:.2f} seconds ({mbps:.2f} Mbps), Response={resp.status}')
+        start = time.perf_counter()
+        conn.request("PUT", url, body=array, headers=headers)
+        resp = conn.getresponse()
+        resp.read()
+        stop = time.perf_counter()
+        duration = stop - start
+        mbps = ((size / duration) * 8) / (1024 * 1024)
+        print(f'[http.client, array] Put {size:,} bytes in {duration:.2f} seconds ({mbps:.2f} Mbps), Response={resp.status}')
 
-    start = time.perf_counter()
-    req = HttpRequest("PUT", url, data=LargeStream(size), headers=headers)
-    resp = pipelinex.run(req)
-    stop = time.perf_counter()
-    duration = stop - start
-    mbps = ((size / duration) * 8) / (1024 * 1024)
-    print(f'[PipelineX, stream] Put {size:,} bytes in {duration:.2f} seconds ({mbps:.2f} Mbps), Response={resp.http_response.status_code}')
+        start = time.perf_counter()
+        req = HttpRequest("PUT", url, data=LargeStream(size), headers=headers)
+        resp = pipelinex.run(req)
+        stop = time.perf_counter()
+        duration = stop - start
+        mbps = ((size / duration) * 8) / (1024 * 1024)
+        print(f'[PipelineX, stream] Put {size:,} bytes in {duration:.2f} seconds ({mbps:.2f} Mbps), Response={resp.http_response.status_code}')
 
-    start = time.perf_counter()
-    req = HttpRequest("PUT", url, data=array, headers=headers)
-    resp = pipelinex.run(req)
-    stop = time.perf_counter()
-    duration = stop - start
-    mbps = ((size / duration) * 8) / (1024 * 1024)
-    print(f'[PipelineX, array] Put {size:,} bytes in {duration:.2f} seconds ({mbps:.2f} Mbps), Response={resp.http_response.status_code}')
+        start = time.perf_counter()
+        req = HttpRequest("PUT", url, data=array, headers=headers)
+        resp = pipelinex.run(req)
+        stop = time.perf_counter()
+        duration = stop - start
+        mbps = ((size / duration) * 8) / (1024 * 1024)
+        print(f'[PipelineX, array] Put {size:,} bytes in {duration:.2f} seconds ({mbps:.2f} Mbps), Response={resp.http_response.status_code}')
 
-    start = time.perf_counter()
-    req = HttpRequest("PUT", url, data=LargeStream(size), headers=headers)
-    resp = pipeline.run(req)
-    stop = time.perf_counter()
-    duration = stop - start
-    mbps = ((size / duration) * 8) / (1024 * 1024)
-    print(f'[Pipeline, stream] Put {size:,} bytes in {duration:.2f} seconds ({mbps:.2f} Mbps), Response={resp.http_response.status_code}')
+        start = time.perf_counter()
+        req = HttpRequest("PUT", url, data=LargeStream(size), headers=headers)
+        resp = pipeline.run(req)
+        stop = time.perf_counter()
+        duration = stop - start
+        mbps = ((size / duration) * 8) / (1024 * 1024)
+        print(f'[Pipeline, stream] Put {size:,} bytes in {duration:.2f} seconds ({mbps:.2f} Mbps), Response={resp.http_response.status_code}')
 
-    start = time.perf_counter()
-    req = HttpRequest("PUT", url, data=array, headers=headers)
-    resp = pipeline.run(req)
-    stop = time.perf_counter()
-    duration = stop - start
-    mbps = ((size / duration) * 8) / (1024 * 1024)
-    print(f'[Pipeline, array] Put {size:,} bytes in {duration:.2f} seconds ({mbps:.2f} Mbps), Response={resp.http_response.status_code}')
+        start = time.perf_counter()
+        req = HttpRequest("PUT", url, data=array, headers=headers)
+        resp = pipeline.run(req)
+        stop = time.perf_counter()
+        duration = stop - start
+        mbps = ((size / duration) * 8) / (1024 * 1024)
+        print(f'[Pipeline, array] Put {size:,} bytes in {duration:.2f} seconds ({mbps:.2f} Mbps), Response={resp.http_response.status_code}')
 
-    start = time.perf_counter()
-    blob_client.stage_block(block_id, LargeStream(size), length=size)
-    stop = time.perf_counter()
-    duration = stop - start
-    mbps = ((size / duration) * 8) / (1024 * 1024)
-    print(f'[stage_block, stream] Put {size:,} bytes in {duration:.2f} seconds ({mbps:.2f} Mbps)')
+        start = time.perf_counter()
+        blob_client.stage_block(block_id, LargeStream(size), length=size)
+        stop = time.perf_counter()
+        duration = stop - start
+        mbps = ((size / duration) * 8) / (1024 * 1024)
+        print(f'[stage_block, stream] Put {size:,} bytes in {duration:.2f} seconds ({mbps:.2f} Mbps)')
 
 
-    # Calling stage_block() with an array **once** improves the perf of stage_block() with a stream for all future calls (!)
+        # Calling stage_block() with an array **once** improves the perf of stage_block() with a stream for all future calls (!)
 
-    # start = time.perf_counter()
-    # blob_client.stage_block(block_id, array, length=size)
-    # stop = time.perf_counter()
+        # start = time.perf_counter()
+        # blob_client.stage_block(block_id, array, length=size)
+        # stop = time.perf_counter()
 
-    # duration = stop - start
-    # mbps = ((size / duration) * 8) / (1024 * 1024)
+        # duration = stop - start
+        # mbps = ((size / duration) * 8) / (1024 * 1024)
 
-    # print(f'[stage_block, array] Put {size:,} bytes in {duration:.2f} seconds ({mbps:.2f} Mbps)')
+        # print(f'[stage_block, array] Put {size:,} bytes in {duration:.2f} seconds ({mbps:.2f} Mbps)')
