@@ -59,6 +59,11 @@ block_id = str(uuid.uuid4())
 
 array = os.urandom(size)
 while True:
+    try:
+        blob_client.delete_blob()
+    except:
+        pass
+
     start = time.perf_counter()
     conn.request("PUT", url, body=LargeStream(size), headers=headers)
     resp = conn.getresponse()
@@ -90,7 +95,7 @@ while True:
     duration = stop - start
     mbps = ((size / duration) * 8) / (1024 * 1024)
 
-    print(f'[stage_block, stream] Put {size:,} bytes in {duration:.2f} seconds ({mbps:.2f} Mbps), Response={resp.status}')
+    print(f'[stage_block, stream] Put {size:,} bytes in {duration:.2f} seconds ({mbps:.2f} Mbps)')
 
 
     start = time.perf_counter()
@@ -100,4 +105,4 @@ while True:
     duration = stop - start
     mbps = ((size / duration) * 8) / (1024 * 1024)
 
-    print(f'[stage_block, array] Put {size:,} bytes in {duration:.2f} seconds ({mbps:.2f} Mbps), Response={resp.status}')
+    print(f'[stage_block, array] Put {size:,} bytes in {duration:.2f} seconds ({mbps:.2f} Mbps)')
