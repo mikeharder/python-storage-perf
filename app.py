@@ -98,11 +98,13 @@ while True:
     print(f'[stage_block, stream] Put {size:,} bytes in {duration:.2f} seconds ({mbps:.2f} Mbps)')
 
 
-    start = time.perf_counter()
-    blob_client.stage_block(block_id, array, length=size)
-    stop = time.perf_counter()
+    # Calling stage_block() with an array **once** improves the perf of stage_block() with a stream for all future calls (!)
 
-    duration = stop - start
-    mbps = ((size / duration) * 8) / (1024 * 1024)
+    # start = time.perf_counter()
+    # blob_client.stage_block(block_id, array, length=size)
+    # stop = time.perf_counter()
 
-    print(f'[stage_block, array] Put {size:,} bytes in {duration:.2f} seconds ({mbps:.2f} Mbps)')
+    # duration = stop - start
+    # mbps = ((size / duration) * 8) / (1024 * 1024)
+
+    # print(f'[stage_block, array] Put {size:,} bytes in {duration:.2f} seconds ({mbps:.2f} Mbps)')
