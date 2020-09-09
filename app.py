@@ -96,6 +96,14 @@ while True:
     print(f'[Pipeline, stream] Put {size:,} bytes in {duration:.2f} seconds ({mbps:.2f} Mbps), Response={resp.http_response.status_code}')
 
     start = time.perf_counter()
+    req = HttpRequest("PUT", url, data=array, headers=headers)
+    resp = pipeline.run(req)
+    stop = time.perf_counter()
+    duration = stop - start
+    mbps = ((size / duration) * 8) / (1024 * 1024)
+    print(f'[Pipeline, array] Put {size:,} bytes in {duration:.2f} seconds ({mbps:.2f} Mbps), Response={resp.http_response.status_code}')
+
+    start = time.perf_counter()
     blob_client.stage_block(block_id, LargeStream(size), length=size)
     stop = time.perf_counter()
     duration = stop - start
