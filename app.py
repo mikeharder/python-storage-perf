@@ -6,6 +6,8 @@ import uuid
 from urllib.parse import urlparse
 import http.client
 
+import requests
+
 from azure.core.pipeline import Pipeline
 from azure.core.pipeline.transport import HttpRequest, HttpResponse, HttpTransport, RequestsTransport
 
@@ -13,6 +15,7 @@ from typing import Iterator, Optional, ContextManager
 import httpx
 
 from azure.storage.blob import BlobClient
+
 class HttpXTransportResponse(HttpResponse):
     def __init__(self,
             request: HttpRequest,
@@ -137,6 +140,8 @@ headers = {
 
 conn = http.client.HTTPSConnection(parsedUrl.netloc)
 
+session = requests.Session()
+
 pipeline = Pipeline(transport=RequestsTransport())
 pipelinex = Pipeline(transport=HttpXTransport())
 
@@ -168,6 +173,20 @@ with pipeline, pipelinex:
         duration = stop - start
         mbps = ((size / duration) * 8) / (1024 * 1024)
         print(f'[http.client, array] Put {size:,} bytes in {duration:.2f} seconds ({mbps:.2f} Mbps), Response={resp.status}')
+
+        start = time.perf_counter()
+        resp = session.request("PUT", url, data=LargeStream(size), headers=headers)
+        stop = time.perf_counter()
+        duration = stop - start
+        mbps = ((size / duration) * 8) / (1024 * 1024)
+        print(f'[requests, stream] Put {size:,} bytes in {duration:.2f} seconds ({mbps:.2f} Mbps), Response={resp.status_code}')
+
+        start = time.perf_counter()
+        resp = session.request("PUT", url, data=array, headers=headers)
+        stop = time.perf_counter()
+        duration = stop - start
+        mbps = ((size / duration) * 8) / (1024 * 1024)
+        print(f'[requests, array] Put {size:,} bytes in {duration:.2f} seconds ({mbps:.2f} Mbps), Response={resp.status_code}')
 
         start = time.perf_counter()
         req = HttpRequest("PUT", url, data=LargeStream(size), headers=headers)
