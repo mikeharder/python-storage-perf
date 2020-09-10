@@ -188,13 +188,18 @@ with pipeline, pipelinex:
         mbps = ((size / duration) * 8) / (1024 * 1024)
         print(f'[requests, array] Put {size:,} bytes in {duration:.2f} seconds ({mbps:.2f} Mbps), Response={resp.status_code}')
 
-        start = time.perf_counter()
-        req = HttpRequest("PUT", url, data=LargeStream(size), headers=headers)
-        resp = pipelinex.run(req)
-        stop = time.perf_counter()
-        duration = stop - start
-        mbps = ((size / duration) * 8) / (1024 * 1024)
-        print(f'[PipelineX, stream] Put {size:,} bytes in {duration:.2f} seconds ({mbps:.2f} Mbps), Response={resp.http_response.status_code}')
+        # HttpXTransport does not support stream data:
+        #   File "lib\site-packages\httpx\_content_streams.py", line 404, in encode
+        #     raise TypeError(f"Unexpected type for 'data', {type(data)!r}")
+        # TypeError: Unexpected type for 'data', <class '__main__.LargeStream'>
+        # 
+        # start = time.perf_counter()
+        # req = HttpRequest("PUT", url, data=LargeStream(size), headers=headers)
+        # resp = pipelinex.run(req)
+        # stop = time.perf_counter()
+        # duration = stop - start
+        # mbps = ((size / duration) * 8) / (1024 * 1024)
+        # print(f'[PipelineX, stream] Put {size:,} bytes in {duration:.2f} seconds ({mbps:.2f} Mbps), Response={resp.http_response.status_code}')
 
         start = time.perf_counter()
         req = HttpRequest("PUT", url, data=array, headers=headers)
@@ -212,13 +217,14 @@ with pipeline, pipelinex:
         mbps = ((size / duration) * 8) / (1024 * 1024)
         print(f'[Pipeline, stream] Put {size:,} bytes in {duration:.2f} seconds ({mbps:.2f} Mbps), Response={resp.http_response.status_code}')
 
-        start = time.perf_counter()
-        req = HttpRequest("PUT", url, data=array, headers=headers)
-        resp = pipeline.run(req)
-        stop = time.perf_counter()
-        duration = stop - start
-        mbps = ((size / duration) * 8) / (1024 * 1024)
-        print(f'[Pipeline, array] Put {size:,} bytes in {duration:.2f} seconds ({mbps:.2f} Mbps), Response={resp.http_response.status_code}')
+        # Using Pipeline with an array **once** improves the perf with a stream for all future calls (!)
+        # start = time.perf_counter()
+        # req = HttpRequest("PUT", url, data=array, headers=headers)
+        # resp = pipeline.run(req)
+        # stop = time.perf_counter()
+        # duration = stop - start
+        # mbps = ((size / duration) * 8) / (1024 * 1024)
+        # print(f'[Pipeline, array] Put {size:,} bytes in {duration:.2f} seconds ({mbps:.2f} Mbps), Response={resp.http_response.status_code}')
 
         start = time.perf_counter()
         blob_client.stage_block(block_id, LargeStream(size), length=size)
@@ -229,12 +235,9 @@ with pipeline, pipelinex:
 
 
         # Calling stage_block() with an array **once** improves the perf of stage_block() with a stream for all future calls (!)
-
         # start = time.perf_counter()
         # blob_client.stage_block(block_id, array, length=size)
         # stop = time.perf_counter()
-
         # duration = stop - start
         # mbps = ((size / duration) * 8) / (1024 * 1024)
-
         # print(f'[stage_block, array] Put {size:,} bytes in {duration:.2f} seconds ({mbps:.2f} Mbps)')
